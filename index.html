@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kana w parach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Układ: jedna wąska kolumna jak karta do ćwiczeń; znak na górze, dwa rzędy odpowiedzi pod nim, ustawienia na dole */
+:root{
+  --bg:#edf0f5; --surface:#ffffff; --ink:#1b2333; --muted:#5b6578; --line:#d3d9e4;
+  --accent:#2a4a8a; --accent-soft:#e0e7f5;
+  --good:#2c7a4c; --good-soft:#dcefe3; --bad:#b1352b; --bad-soft:#f6dfdb; --warm:#f3e7cf;
+  --kana:"Klee One","Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11151d; --surface:#1a202b; --ink:#e5e9f0; --muted:#98a2b4; --line:#2c3441;
+  --accent:#93b1ea; --accent-soft:#23304a;
+  --good:#6cc18e; --good-soft:#1c3427; --bad:#ec8a7f; --bad-soft:#3c221f; --warm:#3a3120; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11151d; --surface:#1a202b; --ink:#e5e9f0; --muted:#98a2b4; --line:#2c3441;
+  --accent:#93b1ea; --accent-soft:#23304a;
+  --good:#6cc18e; --good-soft:#1c3427; --bad:#ec8a7f; --bad-soft:#3c221f; --warm:#3a3120; color-scheme:dark}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:560px;margin:0 auto;padding-block:18px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--kana);font-weight:600;font-size:24px;margin:0;text-wrap:balance}
+h1 span{color:var(--muted);font-weight:400}
+.score{font-variant-numeric:tabular-nums;color:var(--muted);font-size:14px}
+.score b{color:var(--ink);font-weight:600}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px}
+.tabs button{flex:1;border:0;background:transparent;color:var(--muted);font:inherit;font-weight:500;padding:8px;border-radius:7px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--accent-soft);color:var(--ink)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:16px}
+.prompt{display:flex;flex-direction:column;align-items:center;gap:2px;padding-block:6px}
+.label{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:500}
+.glyph{font-family:var(--kana);font-size:96px;line-height:1.1;min-height:106px}
+.glyph.romaji{font-family:var(--body);font-size:64px;font-weight:500;line-height:1.65}
+.group{display:flex;flex-direction:column;gap:8px}
+.opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.opt{min-height:58px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;cursor:pointer;font-family:var(--kana);font-size:32px;line-height:1;padding:6px}
+.opt.r{font-family:var(--body);font-size:20px;font-weight:500}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.good{border-color:var(--good);background:var(--good-soft)}
+.opt.bad{border-color:var(--bad);background:var(--bad-soft)}
+.opt:disabled{cursor:default}
+.feedback{min-height:92px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:14px}
+.verdict{display:flex;flex-direction:column;gap:4px;min-width:0}
+.verdict .msg{font-weight:600}
+.verdict .msg.ok{color:var(--good)} .verdict .msg.no{color:var(--bad)}
+.pair{display:flex;align-items:baseline;gap:14px;font-family:var(--kana);font-size:34px;line-height:1.2}
+.pair .rj{font-family:var(--body);font-size:18px;color:var(--muted)}
+.hint{font-size:13px;color:var(--muted)}
+.next{border:0;background:var(--accent);color:var(--surface);font:inherit;font-weight:600;padding:12px 22px;border-radius:10px;cursor:pointer}
+.next:disabled{opacity:.35;cursor:default}
+
+details.settings{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px 16px}
+details.settings[open]{padding-bottom:16px}
+summary{cursor:pointer;padding-block:12px;font-weight:500}
+.set{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1.5px solid var(--line);background:var(--bg);color:var(--muted);border-radius:999px;padding:5px 12px;font:inherit;font-size:14px;cursor:pointer}
+.chip .k{font-family:var(--kana);font-size:17px}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+.small{font-size:13px;color:var(--muted);margin:0}
+.reset{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ghost{border:1.5px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-size:14px;padding:6px 12px;border-radius:8px;cursor:pointer}
+.ghost.danger{border-color:var(--bad);color:var(--bad)}
+
+.table-wrap{overflow-x:auto}
+table{border-collapse:separate;border-spacing:4px;margin:0 auto}
+td{width:62px;height:66px;background:var(--surface);border:1px solid var(--line);border-radius:8px;text-align:center;vertical-align:middle;padding:2px}
+td.empty{background:transparent;border-color:transparent}
+td.warm{background:var(--warm)} td.hot{background:var(--bad-soft);border-color:var(--bad)}
+td .hk{font-family:var(--kana);font-size:22px;line-height:1.2;white-space:nowrap}
+td .hk span{color:var(--accent)}
+td .rr{font-size:12px;color:var(--muted)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);justify-content:center}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px;border:1px solid var(--line)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1>Kana w parach <span>あ・ア</span></h1>
+    <div class="score" id="score">Dziś: <b>0</b> / 0</div>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button role="tab" id="tab-ex" aria-selected="true">Ćwiczenie</button>
+    <button role="tab" id="tab-tb" aria-selected="false">Tabela</button>
+  </div>
+
+  <section id="view-ex" style="display:flex;flex-direction:column;gap:16px">
+    <div class="card">
+      <div class="prompt">
+        <div class="label" id="p-label">Hiragana</div>
+        <div class="glyph" id="p-glyph">あ</div>
+      </div>
+      <div class="group"><div class="label" id="g1-label">Katakana</div><div class="opts" id="g1"></div></div>
+      <div class="group"><div class="label" id="g2-label">Romaji</div><div class="opts" id="g2"></div></div>
+      <div class="feedback">
+        <div class="verdict" id="verdict"><span class="hint">Wybierz po jednym znaku w każdym rzędzie.</span></div>
+        <button class="next" id="next" disabled>Dalej</button>
+      </div>
+    </div>
+
+    <details class="settings" id="settings">
+      <summary>Ustawienia</summary>
+      <div class="set">
+        <div class="label">Co ma być pokazane</div>
+        <div class="chips" id="modes"></div>
+      </div>
+      <div class="set">
+        <div class="label">Rzędy znaków</div>
+        <div class="chips" id="rows"></div>
+        <p class="small">Ostatnie pięć rzędów to znaki z kreseczkami (dźwięczne).</p>
+      </div>
+      <div class="set">
+        <div class="label">Skupienie</div>
+        <div class="chips"><button class="chip" id="hard" aria-pressed="false">Tylko znaki, z którymi mam kłopot</button></div>
+        <p class="small">Znaki, przy których się mylisz, i tak pojawiają się częściej. Ta opcja pokazuje wyłącznie je.</p>
+      </div>
+      <div class="set">
+        <div class="label">Wyniki</div>
+        <div class="reset" id="reset-box"><button class="ghost" id="reset">Wyczyść zapamiętane błędy</button></div>
+      </div>
+    </details>
+  </section>
+
+  <section id="view-tb" hidden style="flex-direction:column;gap:12px">
+    <div class="card">
+      <div class="table-wrap"><table id="table"></table></div>
+      <div class="legend">
+        <span><span class="sw" style="background:var(--warm)"></span>zdarzały się pomyłki</span>
+        <span><span class="sw" style="background:var(--bad-soft);border-color:var(--bad)"></span>częste pomyłki</span>
+      </div>
+      <p class="small" style="text-align:center">Kolory biorą się z Twoich odpowiedzi w ćwiczeniu na tym urządzeniu.</p>
+    </div>
+  </section>
+</div>
+
+<script>
+const ROWS = [
+  ['a','あいうえお','アイウエオ',['a','i','u','e','o'],0],
+  ['k','かきくけこ','カキクケコ',['ka','ki','ku','ke','ko'],0],
+  ['s','さしすせそ','サシスセソ',['sa','shi','su','se','so'],0],
+  ['t','たちつてと','タチツテト',['ta','chi','tsu','te','to'],0],
+  ['n','なにぬねの','ナニヌネノ',['na','ni','nu','ne','no'],0],
+  ['h','はひふへほ','ハヒフヘホ',['ha','hi','fu','he','ho'],0],
+  ['m','まみむめも','マミムメモ',['ma','mi','mu','me','mo'],0],
+  ['y','や・ゆ・よ','ヤ・ユ・ヨ',['ya','','yu','','yo'],0],
+  ['r','らりるれろ','ラリルレロ',['ra','ri','ru','re','ro'],0],
+  ['w','わ・・・を','ワ・・・ヲ',['wa','','','','wo'],0],
+  ['nn','ん・・・・','ン・・・・',['n','','','',''],0],
+  ['g','がぎぐげご','ガギグゲゴ',['ga','gi','gu','ge','go'],1],
+  ['z','ざじずぜぞ','ザジズゼゾ',['za','ji','zu','ze','zo'],1],
+  ['d','だ・・でど','ダ・・デド',['da','','','de','do'],1],
+  ['b','ばびぶべぼ','バビブベボ',['ba','bi','bu','be','bo'],1],
+  ['p','ぱぴぷぺぽ','パピプペポ',['pa','pi','pu','pe','po'],1],
+];
+// Pary, które łatwo pomylić (w obrębie jednego pisma)
+const CONF = [
+  'さち','きさ','ぬめ','ねれわ','るろ','はほけ','いり','こに','あおめ','うつ','しつ','まも','ばぱ','ぼぽ',
+  'シツソン','ノメ','クケタ','ワウフラ','ユコロ','セサ','チテ','ルレ','マムア','ヌス','ナメ','ヲヨ','エニ','バパ','ボポ'
+];
+// Znaki, które w hiraganie i katakanie wyglądają podobnie
+const SIMILAR = new Set([...'かきけせへもやりこにうらがぎげぜべぺご']);
+
+const ALL = [], byChar = {}, grid = [];
+ROWS.forEach(([id,h,k,r,dak],ri)=>{
+  const hs=[...h], ks=[...k], line=[];
+  hs.forEach((ch,ci)=>{
+    if(ch==='・'){line.push(null);return}
+    const it={h:ch,k:ks[ci],r:r[ci],row:id,key:ch};
+    ALL.push(it); byChar[ch]=it; byChar[ks[ci]]=it; line.push(it);
+  });
+  grid.push({id,dak,line});
+});
+const confOf = ch => { const s=new Set(); CONF.forEach(g=>{ if(g.includes(ch)) [...g].forEach(c=>{ if(c!==ch) s.add(c) }) }); return [...s]; };
+const shuffle = a => { for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a; };
+const NAMES = {h:'Hiragana',k:'Katakana',r:'Romaji'};
+
+let stats={}, cfg={rows:ROWS.filter(r=>!r[4]).map(r=>r[0]), mode:'mix', hard:false};
+try{ stats=JSON.parse(localStorage.getItem('kanaStats')||'{}')||{}; const c=JSON.parse(localStorage.getItem('kanaCfg')||'null'); if(c&&Array.isArray(c.rows)) cfg=Object.assign(cfg,c); }catch(e){}
+const save=()=>{ try{ localStorage.setItem('kanaStats',JSON.stringify(stats)); localStorage.setItem('kanaCfg',JSON.stringify(cfg)); }catch(e){} };
+const st = it => stats[it.key] || (stats[it.key]={seen:0,miss:0});
+let session={ok:0,all:0}, q=null, last=null, timer=null;
+
+function pool(){
+  let p = ALL.filter(it=>cfg.rows.includes(it.row));
+  if(!p.length) p = ALL.filter(it=>it.row==='a');
+  if(cfg.hard){ const hp=p.filter(it=>(stats[it.key]?.miss||0)>0); if(hp.length) return hp; }
+  return p;
+}
+function pickItem(){
+  const p = pool().filter(it=>it!==last || pool().length<2);
+  const w = p.map(it=>{ const s=stats[it.key]; return 1 + (s?s.miss*2.5:0.6); });
+  let x=Math.random()*w.reduce((a,b)=>a+b,0);
+  for(let i=0;i<p.length;i++){ x-=w[i]; if(x<=0) return p[i]; }
+  return p[p.length-1];
+}
+function optionsFor(item, kind, promptKind){
+  const cand=[], has=(list,it)=>list.some(c=>c[kind]===it[kind]);
+  const push=it=>{ if(it && it[kind]!==item[kind] && !has(cand,it)) cand.push(it) };
+  if(kind!=='r') confOf(item[kind]).forEach(c=>push(byChar[c]));
+  if(promptKind!=='r') confOf(item[promptKind]).forEach(c=>push(byChar[c]));
+  const list=shuffle(cand).slice(0,3);
+  const p=pool(), rest=shuffle(p.filter(it=>it.row===item.row)).concat(shuffle(p.slice()),shuffle(ALL.slice()));
+  for(const it of rest){ if(list.length>=5) break; if(it[kind]!==item[kind] && !has(list,it)) list.push(it); }
+  return shuffle(list.concat([item]));
+}
+
+const $=id=>document.getElementById(id);
+function newQuestion(){
+  clearTimeout(timer);
+  const item=pickItem(); last=item;
+  const pk = cfg.mode==='mix' ? ['h','k','r'][Math.floor(Math.random()*3)] : cfg.mode;
+  const asks = ['h','k','r'].filter(k=>k!==pk);
+  q={item,pk,asks,chosen:{},done:false};
+  $('p-label').textContent=NAMES[pk];
+  const g=$('p-glyph'); g.textContent=item[pk]; g.className='glyph'+(pk==='r'?' romaji':'');
+  asks.forEach((kind,gi)=>{
+    $('g'+(gi+1)+'-label').textContent=NAMES[kind];
+    const box=$('g'+(gi+1)); box.innerHTML='';
+    optionsFor(item,kind,pk).forEach(it=>{
+      const b=document.createElement('button');
+      b.className='opt'+(kind==='r'?' r':''); b.textContent=it[kind];
+      b.onclick=()=>choose(kind,it,b,box);
+      b._it=it; box.appendChild(b);
+    });
+  });
+  $('verdict').innerHTML='<span class="hint">Wybierz po jednym znaku w każdym rzędzie.</span>';
+  $('next').disabled=true;
+}
+function choose(kind,it,btn,box){
+  if(q.done) return;
+  [...box.children].forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel'); q.chosen[kind]=it;
+  if(q.asks.every(k=>q.chosen[k])) check();
+}
+function check(){
+  q.done=true;
+  const it=q.item, ok=q.asks.every(k=>q.chosen[k][k]===it[k]);
+  q.asks.forEach((kind,gi)=>{
+    [...$('g'+(gi+1)).children].forEach(b=>{
+      b.classList.remove('sel'); b.disabled=true;
+      if(b._it[kind]===it[kind]) b.classList.add('good');
+      else if(q.chosen[kind]===b._it) b.classList.add('bad');
+    });
+  });
+  const s=st(it); s.seen++; s.miss = ok ? Math.max(0,s.miss-0.34) : s.miss+1;
+  session.all++; if(ok) session.ok++;
+  save(); renderScore();
+  const sim = SIMILAR.has(it.h) ? '<span class="hint">Ten sam kształt w obu pismach.</span>' : '';
+  $('verdict').innerHTML =
+    `<span class="msg ${ok?'ok':'no'}">${ok?'Dobrze':'Poprawna para to:'}</span>`+
+    `<span class="pair"><span>${it.h}</span><span>${it.k}</span><span class="rj">${it.r}</span></span>`+sim;
+  $('next').disabled=false;
+  if(ok) timer=setTimeout(newQuestion,1500); else $('next').focus();
+}
+function renderScore(){ $('score').innerHTML=`Dziś: <b>${session.ok}</b> / ${session.all}`; }
+
+function renderSettings(){
+  const modes=[['mix','Wszystko losowo'],['h','Hiragana'],['k','Katakana'],['r','Romaji']];
+  $('modes').innerHTML='';
+  modes.forEach(([m,l])=>{ const b=document.createElement('button'); b.className='chip'; b.textContent=l; b.setAttribute('aria-pressed',cfg.mode===m);
+    b.onclick=()=>{cfg.mode=m;save();renderSettings();newQuestion()}; $('modes').appendChild(b); });
+  $('rows').innerHTML='';
+  grid.forEach(r=>{ const first=r.line.find(Boolean); const b=document.createElement('button'); b.className='chip';
+    b.innerHTML=`<span class="k">${first.h}・${first.k}</span>`; b.setAttribute('aria-pressed',cfg.rows.includes(r.id));
+    b.onclick=()=>{ const on=cfg.rows.includes(r.id); if(on && cfg.rows.length===1) return;
+      cfg.rows = on ? cfg.rows.filter(x=>x!==r.id) : cfg.rows.concat([r.id]); save(); renderSettings(); newQuestion(); };
+    $('rows').appendChild(b); });
+  $('hard').setAttribute('aria-pressed',cfg.hard);
+}
+$('hard').onclick=()=>{ cfg.hard=!cfg.hard; save(); renderSettings(); newQuestion(); };
+function resetHandler(){
+  $('reset-box').innerHTML='<span class="small">Na pewno?</span><button class="ghost danger" id="yes">Tak, wyczyść</button><button class="ghost" id="no">Anuluj</button>';
+  $('yes').onclick=()=>{ stats={}; save(); restoreReset(); renderTable(); };
+  $('no').onclick=restoreReset;
+}
+$('reset').onclick=resetHandler;
+function restoreReset(){ $('reset-box').innerHTML='<button class="ghost" id="reset">Wyczyść zapamiętane błędy</button>'; $('reset').onclick=resetHandler; }
+
+function renderTable(){
+  const t=$('table'); t.innerHTML='';
+  grid.forEach(r=>{ const tr=document.createElement('tr');
+    r.line.forEach(it=>{ const td=document.createElement('td');
+      if(!it){ td.className='empty'; }
+      else{ const s=stats[it.key]; if(s&&s.miss>=1.5) td.className='hot'; else if(s&&s.miss>0) td.className='warm';
+        td.innerHTML=`<div class="hk">${it.h}<span>${it.k}</span></div><div class="rr">${it.r}</div>`; }
+      tr.appendChild(td); });
+    t.appendChild(tr); });
+}
+function show(tab){
+  $('tab-ex').setAttribute('aria-selected',tab==='ex'); $('tab-tb').setAttribute('aria-selected',tab==='tb');
+  $('view-ex').hidden = tab!=='ex'; $('view-tb').hidden = tab!=='tb';
+  $('view-tb').style.display = tab==='tb' ? 'flex' : '';
+  if(tab==='tb') renderTable();
+}
+$('tab-ex').onclick=()=>show('ex'); $('tab-tb').onclick=()=>show('tb');
+$('next').onclick=newQuestion;
+
+renderSettings(); renderScore(); newQuestion();
+</script>
+</body>
+</html>
